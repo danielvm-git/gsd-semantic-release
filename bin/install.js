@@ -76,7 +76,7 @@ const hasUninstall = args.includes('--uninstall') || args.includes('-u');
 // Runtime selection - can be set by flags or interactive prompt
 let selectedRuntimes = [];
 if (hasAll) {
-  selectedRuntimes = ['claude', 'opencode', 'gemini', 'kilo', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf'];
+  selectedRuntimes = ['claude', 'kilo', 'opencode', 'gemini', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf'];
 } else if (hasBoth) {
   selectedRuntimes = ['claude', 'opencode'];
 } else {
@@ -5117,21 +5117,21 @@ function promptRuntime(callback) {
 
   const runtimeMap = {
     '1': 'claude',
-    '2': 'opencode',
-    '3': 'gemini',
-    '4': 'kilo',
+    '2': 'kilo',
+    '3': 'opencode',
+    '4': 'gemini',
     '5': 'codex',
     '6': 'copilot',
     '7': 'antigravity',
     '8': 'cursor',
     '9': 'windsurf'
   };
-  const allRuntimes = ['claude', 'opencode', 'gemini', 'kilo', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf'];
+  const allRuntimes = ['claude', 'kilo', 'opencode', 'gemini', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf'];
 
   console.log(`  ${yellow}Which runtime(s) would you like to install for?${reset}\n\n  ${cyan}1${reset}) Claude Code  ${dim}(~/.claude)${reset}
-  ${cyan}2${reset}) OpenCode     ${dim}(~/.config/opencode)${reset} - open source, free models
-  ${cyan}3${reset}) Gemini       ${dim}(~/.gemini)${reset}
-  ${cyan}4${reset}) Kilo         ${dim}(~/.config/kilo)${reset} - OpenCode fork
+  ${cyan}2${reset}) Kilo         ${dim}(~/.config/kilo)${reset} - open source, the #1 AI coding platform on OpenRouter
+  ${cyan}3${reset}) OpenCode     ${dim}(~/.config/opencode)${reset} - open source, free models
+  ${cyan}4${reset}) Gemini       ${dim}(~/.gemini)${reset}
   ${cyan}5${reset}) Codex        ${dim}(~/.codex)${reset}
   ${cyan}6${reset}) Copilot      ${dim}(~/.copilot)${reset}
   ${cyan}7${reset}) Antigravity  ${dim}(~/.gemini/antigravity)${reset}
@@ -5139,7 +5139,7 @@ function promptRuntime(callback) {
   ${cyan}9${reset}) Windsurf     ${dim}(~/.windsurf)${reset}
   ${cyan}10${reset}) All
 
-  ${dim}Select multiple: 1,4,6 or 1 4 6${reset}
+  ${dim}Select multiple: 1,2,6 or 1 2 6${reset}
 `);
 
   rl.question(`  Choice ${dim}[1]${reset}: `, (answer) => {

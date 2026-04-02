@@ -19,16 +19,16 @@ const installSrc = fs.readFileSync(
 // Extract runtimeMap from source for validation
 const runtimeMap = {
   '1': 'claude',
-  '2': 'opencode',
-  '3': 'gemini',
-  '4': 'kilo',
+  '2': 'kilo',
+  '3': 'opencode',
+  '4': 'gemini',
   '5': 'codex',
   '6': 'copilot',
   '7': 'antigravity',
   '8': 'cursor',
   '9': 'windsurf'
 };
-const allRuntimes = ['claude', 'opencode', 'gemini', 'kilo', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf'];
+const allRuntimes = ['claude', 'kilo', 'opencode', 'gemini', 'codex', 'copilot', 'antigravity', 'cursor', 'windsurf'];
 
 /**
  * Simulate the parsing logic from promptRuntime without requiring readline.
@@ -56,15 +56,16 @@ function parseRuntimeInput(input) {
 describe('multi-runtime selection parsing', () => {
   test('single choice returns single runtime', () => {
     assert.deepStrictEqual(parseRuntimeInput('1'), ['claude']);
-    assert.deepStrictEqual(parseRuntimeInput('4'), ['kilo']);
+    assert.deepStrictEqual(parseRuntimeInput('2'), ['kilo']);
+    assert.deepStrictEqual(parseRuntimeInput('4'), ['gemini']);
     assert.deepStrictEqual(parseRuntimeInput('5'), ['codex']);
     assert.deepStrictEqual(parseRuntimeInput('8'), ['cursor']);
   });
 
   test('comma-separated choices return multiple runtimes', () => {
     assert.deepStrictEqual(parseRuntimeInput('1,5,7'), ['claude', 'codex', 'antigravity']);
-    assert.deepStrictEqual(parseRuntimeInput('2,3'), ['opencode', 'gemini']);
-    assert.deepStrictEqual(parseRuntimeInput('2,4'), ['opencode', 'kilo']);
+    assert.deepStrictEqual(parseRuntimeInput('2,3'), ['kilo', 'opencode']);
+    assert.deepStrictEqual(parseRuntimeInput('3,4'), ['opencode', 'gemini']);
   });
 
   test('space-separated choices return multiple runtimes', () => {
@@ -74,7 +75,7 @@ describe('multi-runtime selection parsing', () => {
 
   test('mixed comma and space separators work', () => {
     assert.deepStrictEqual(parseRuntimeInput('1, 5, 7'), ['claude', 'codex', 'antigravity']);
-    assert.deepStrictEqual(parseRuntimeInput('2 , 6'), ['opencode', 'copilot']);
+    assert.deepStrictEqual(parseRuntimeInput('2 , 6'), ['kilo', 'copilot']);
   });
 
   test('single choice for windsurf', () => {
@@ -98,7 +99,7 @@ describe('multi-runtime selection parsing', () => {
 
   test('invalid choices mixed with valid are filtered out', () => {
     assert.deepStrictEqual(parseRuntimeInput('1,11,5'), ['claude', 'codex']);
-    assert.deepStrictEqual(parseRuntimeInput('abc 3 xyz'), ['gemini']);
+    assert.deepStrictEqual(parseRuntimeInput('abc 3 xyz'), ['opencode']);
   });
 
   test('duplicate choices are deduplicated', () => {
@@ -108,7 +109,7 @@ describe('multi-runtime selection parsing', () => {
 
   test('preserves selection order', () => {
     assert.deepStrictEqual(parseRuntimeInput('7,1,5'), ['antigravity', 'claude', 'codex']);
-    assert.deepStrictEqual(parseRuntimeInput('8,2,6'), ['cursor', 'opencode', 'copilot']);
+    assert.deepStrictEqual(parseRuntimeInput('8,2,6'), ['cursor', 'kilo', 'copilot']);
   });
 });
 
