@@ -16,14 +16,14 @@ INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
-Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`.
+Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`, `branching_strategy`, `branch_name`, `phase_type` (ROADMAP **Type**: `feat` | `fix` | `refactor` | `breaking`; default `feat`).
 
-Also load config for branching strategy:
+Also load full config if needed:
 ```bash
 CONFIG=$(gsd-sdk query state.load)
 ```
 
-Extract: `branching_strategy`, `branch_name`.
+`branching_strategy` is on the init JSON and inside `CONFIG.config` from `state.load` — prefer init JSON for `branch_name` / `phase_type`.
 
 Detect base branch for PRs and merges:
 ```bash
@@ -57,6 +57,7 @@ Verify the work is ready to ship:
    ```
    If on `${BASE_BRANCH}`: warn — should be on a feature branch.
    If branching_strategy is `none`: offer to create a branch now.
+   If branching_strategy is `semantic-release` and current branch does not match `branch_name` from init: warn — checkout the precomputed branch or recreate it with `/gsd-execute-phase`.
 
 4. **Remote configured?**
    ```bash
@@ -90,10 +91,27 @@ Report: "Pushed `{branch}` to origin ({commit_count} commits ahead of ${BASE_BRA
 Auto-generate a rich PR body from planning artifacts:
 
 **1. Title:**
+
+Default (non-semantic-release):
 ```
 Phase {phase_number}: {phase_name}
 ```
 Or for milestone: `Milestone {version}: {name}`
+
+**When `branching_strategy` is `semantic-release`** — PR title (and recommended squash-merge commit message on `main`) must be a single [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) line so `semantic-release` can bump semver:
+
+| `phase_type` (from ROADMAP **Type**) | PR title pattern |
+|--------------------------------------|------------------|
+| `feat` | `feat(phase-{padded_phase}): {imperative summary from phase_name}` |
+| `fix` | `fix(phase-{padded_phase}): {imperative summary}` |
+| `refactor` | `refactor(phase-{padded_phase}): {imperative summary}` |
+| `breaking` | `feat(phase-{padded_phase})!: {imperative summary}` — and **first paragraph of PR body** must include `BREAKING CHANGE: {what breaks}` |
+
+Use `padded_phase` from init (e.g. `03`). Keep subject ≤72 characters, imperative mood, no trailing period.
+
+After merge: remind that CI should run `semantic-release` on the default branch; squash merge is recommended so one conventional commit lands per phase.
+
+**Preview / canary (optional):** For hosted apps (e.g. [Appwrite Sites PR previews](https://appwrite.io/docs/products/sites/previews)), configure CI to deploy the PR branch — out of band from GSD, but mention in PR body if the project uses it.
 
 **2. Summary section:**
 Read ROADMAP.md for phase goal. Read VERIFICATION.md for verification status.
@@ -144,11 +162,15 @@ For each SUMMARY.md in the phase directory:
 </step>
 
 <step name="create_pr">
-Create the PR using the generated body:
+Create the PR using the generated body.
+
+Set `PR_TITLE`:
+- If `branching_strategy` is `semantic-release`: use the conventional title from the table in `generate_pr_body` (from `phase_type`, `padded_phase`, `phase_name`).
+- Else: `Phase ${PHASE_NUMBER}: ${PHASE_NAME}` (or milestone title when applicable).
 
 ```bash
 gh pr create \
-  --title "Phase ${PHASE_NUMBER}: ${PHASE_NAME}" \
+  --title "${PR_TITLE}" \
   --body "${PR_BODY}" \
   --base ${BASE_BRANCH}
 ```

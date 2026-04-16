@@ -5,12 +5,12 @@
 # Allows conforming messages and all non-commit commands (exit 0).
 # Uses Node.js for JSON parsing (always available in GSD projects, no jq dependency).
 #
-# OPT-IN: This hook is a no-op unless config.json has hooks.community: true.
+# OPT-IN: hooks.community: true, OR auto-on when git.branching_strategy is semantic-release.
 # Enable with: "hooks": { "community": true } in .planning/config.json
 
 # Check opt-in config — exit silently if not enabled
 if [ -f .planning/config.json ]; then
-  ENABLED=$(node -e "try{const c=require('./.planning/config.json');process.stdout.write(c.hooks?.community===true?'1':'0')}catch{process.stdout.write('0')}" 2>/dev/null)
+  ENABLED=$(node -e "try{const c=require('./.planning/config.json');const sr=c.git?.branching_strategy==='semantic-release'||c.branching_strategy==='semantic-release';const comm=c.hooks?.community===true;process.stdout.write(comm||sr?'1':'0')}catch{process.stdout.write('0')}" 2>/dev/null)
   if [ "$ENABLED" != "1" ]; then exit 0; fi
 else
   exit 0

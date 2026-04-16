@@ -66,6 +66,7 @@ describe('loadConfig', () => {
     expect(config.git.branching_strategy).toBe('milestone');
     // Other git defaults preserved
     expect(config.git.phase_branch_template).toBe('gsd/phase-{phase}-{slug}');
+    expect(config.git.semantic_release_branch_template).toBe('{type}/phase-{phase}-{slug}');
     expect(config.hooks.context_warnings).toBe(false);
   });
 

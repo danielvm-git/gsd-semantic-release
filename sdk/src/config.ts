@@ -16,6 +16,8 @@ export interface GitConfig {
   phase_branch_template: string;
   milestone_branch_template: string;
   quick_branch_template: string | null;
+  /** Used when branching_strategy is semantic-release; {type} from ROADMAP **Type**. */
+  semantic_release_branch_template: string;
 }
 
 export interface WorkflowConfig {
@@ -70,6 +72,7 @@ export const CONFIG_DEFAULTS: GSDConfig = {
     phase_branch_template: 'gsd/phase-{phase}-{slug}',
     milestone_branch_template: 'gsd/{milestone}-{slug}',
     quick_branch_template: null,
+    semantic_release_branch_template: '{type}/phase-{phase}-{slug}',
   },
   workflow: {
     research: true,

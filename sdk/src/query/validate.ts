@@ -597,12 +597,23 @@ export const validateHealth: QueryHandler = async (args, projectDir) => {
       const configRaw = await readFile(configPath, 'utf-8');
       const configParsed = JSON.parse(configRaw) as Record<string, unknown>;
 
-      const validStrategies = ['none', 'phase', 'milestone'];
-      const bs = configParsed.branching_strategy as string | undefined;
+      const validStrategies = ['none', 'phase', 'milestone', 'semantic-release'];
+      const gitObj = configParsed.git as Record<string, unknown> | undefined;
+      const bs =
+        (gitObj?.branching_strategy as string | undefined) ||
+        (configParsed.branching_strategy as string | undefined);
       if (bs && !validStrategies.includes(bs)) {
         addIssue('warning', 'W012',
           `config.json: invalid branching_strategy "${bs}"`,
           `Valid values: ${validStrategies.join(', ')}`);
+      }
+      const srTpl =
+        (gitObj?.semantic_release_branch_template as string | undefined) ||
+        (configParsed.semantic_release_branch_template as string | undefined);
+      if (bs === 'semantic-release' && srTpl && !srTpl.includes('{phase}')) {
+        addIssue('warning', 'W016',
+          'config.json: semantic_release_branch_template missing {phase} placeholder',
+          'Template must include {phase} (and usually {slug}, {type}) for semantic-release strategy');
       }
 
       if (configParsed.context_window !== undefined) {

@@ -736,6 +736,25 @@ describe('getRoadmapPhaseInternal', () => {
     assert.strictEqual(result.found, true);
     assert.strictEqual(result.phase_name, 'Foundation');
     assert.strictEqual(result.goal, 'Build the base');
+    assert.strictEqual(result.phase_type, 'feat');
+  });
+
+  test('extracts phase_type from **Type** line (semantic-release)', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      '### Phase 3: Hotfix\n**Goal**: Patch CVE\n**Type**: fix\n'
+    );
+    const result = getRoadmapPhaseInternal(tmpDir, '3');
+    assert.strictEqual(result.phase_type, 'fix');
+  });
+
+  test('extracts phase_type from bullet Type line', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      '### Phase 2: Breaking API\n**Goal**: Remove v1\n- Type: breaking\n'
+    );
+    const result = getRoadmapPhaseInternal(tmpDir, '2');
+    assert.strictEqual(result.phase_type, 'breaking');
   });
 
   test('extracts phase name and goal from roadmap', () => {
@@ -746,6 +765,7 @@ describe('getRoadmapPhaseInternal', () => {
     const result = getRoadmapPhaseInternal(tmpDir, '2');
     assert.strictEqual(result.phase_name, 'API Layer');
     assert.strictEqual(result.goal, 'Create REST endpoints');
+    assert.strictEqual(result.phase_type, 'feat');
   });
 
   test('returns goal when Goal uses colon-outside-bold format', () => {
@@ -758,6 +778,7 @@ describe('getRoadmapPhaseInternal', () => {
     assert.strictEqual(result.found, true);
     assert.strictEqual(result.phase_name, 'Foundation');
     assert.strictEqual(result.goal, 'Build the base');
+    assert.strictEqual(result.phase_type, 'feat');
   });
 
   test('returns null when roadmap missing', () => {
@@ -789,6 +810,7 @@ describe('getRoadmapPhaseInternal', () => {
     assert.ok(result.section.includes('Some details here'));
     // Should not include Phase 2 content
     assert.ok(!result.section.includes('Phase 2: API'));
+    assert.strictEqual(result.phase_type, 'feat');
   });
 });
 

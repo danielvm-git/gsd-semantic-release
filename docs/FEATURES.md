@@ -868,7 +868,7 @@
 | `planning.commit_docs` | boolean | `true` | Commit `.planning/` files to git |
 | `planning.search_gitignored` | boolean | `false` | Include gitignored files in searches |
 | `parallelization.enabled` | boolean | `true` | Run independent plans simultaneously |
-| `git.branching_strategy` | enum | `none` | `none`, `phase`, or `milestone` |
+| `git.branching_strategy` | enum | `none` | `none`, `phase`, `milestone`, or `semantic-release` |
 
 ---
 
@@ -894,7 +894,7 @@
 **Requirements:**
 - REQ-GIT-01: Each task MUST get its own atomic commit
 - REQ-GIT-02: Commit messages MUST follow structured format: `type(scope): description`
-- REQ-GIT-03: System MUST support 3 branching strategies: `none`, `phase`, `milestone`
+- REQ-GIT-03: System MUST support branching strategies: `none`, `phase`, `milestone`, `semantic-release` (ROADMAP **Type** + conventional PR titles for automated semver)
 - REQ-GIT-04: Phase strategy MUST create one branch per phase
 - REQ-GIT-05: Milestone strategy MUST create one branch per milestone
 - REQ-GIT-06: Complete-milestone MUST offer squash merge (recommended) or merge with history

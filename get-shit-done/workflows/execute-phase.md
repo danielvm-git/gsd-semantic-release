@@ -72,7 +72,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS=$(gsd-sdk query agent-skills gsd-executor 2>/dev/null)
 ```
 
-Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_type`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
@@ -210,12 +210,14 @@ Check `branching_strategy` from init:
 
 **"none":** Skip, continue on current branch.
 
-**"phase" or "milestone":** Use pre-computed `branch_name` from init:
+**"phase", "milestone", or "semantic-release":** Use pre-computed `branch_name` from init (for `semantic-release`, branch is derived from ROADMAP phase **Type** (`feat`/`fix`/`refactor`/`breaking`) and `git.semantic_release_branch_template`, default `{type}/phase-{phase}-{slug}`; `breaking` uses `feat/` prefix on the branch).
 ```bash
 git checkout -b "$BRANCH_NAME" 2>/dev/null || git checkout "$BRANCH_NAME"
 ```
 
 All subsequent commits go to this branch. User handles merging.
+
+**`semantic-release`:** Task commits stay conventional per `git-integration.md`. Prefer squash-merge of the phase PR to `main` so CI `semantic-release` sees one commit per phase. `phase_type` in init JSON matches ROADMAP **Type** for PR title guidance in `/gsd-ship`.
 </step>
 
 <step name="validate_phase">

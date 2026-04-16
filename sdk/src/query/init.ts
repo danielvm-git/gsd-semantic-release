@@ -52,6 +52,47 @@ function generateSlugInternal(text: string): string {
     .substring(0, 60);
 }
 
+/** Pre-compute git branch name — port of computeBranchNameForPhase in init.cjs */
+function computeBranchNameForPhase(
+  git: {
+    branching_strategy: string;
+    phase_branch_template: string;
+    milestone_branch_template: string;
+    semantic_release_branch_template: string;
+  },
+  phaseInfo: Record<string, unknown> | null,
+  roadmapPhase: Record<string, unknown> | null,
+  milestone: { version: string; name: string },
+  projectCode: string,
+): string | null {
+  if (!phaseInfo || !phaseInfo.found) return null;
+  const phaseNumber = (phaseInfo.phase_number as string) || '';
+  const phaseSlug = (phaseInfo.phase_slug as string) || 'phase';
+  const strat = git.branching_strategy;
+  if (strat === 'semantic-release') {
+    const phaseType = (roadmapPhase?.phase_type as string) || 'feat';
+    const branchType = phaseType === 'breaking' ? 'feat' : phaseType;
+    const tpl = git.semantic_release_branch_template || '{type}/phase-{phase}-{slug}';
+    return tpl
+      .replace('{project}', projectCode)
+      .replace('{type}', branchType)
+      .replace('{phase}', phaseNumber)
+      .replace('{slug}', phaseSlug);
+  }
+  if (strat === 'phase') {
+    return git.phase_branch_template
+      .replace('{project}', projectCode)
+      .replace('{phase}', phaseNumber)
+      .replace('{slug}', phaseSlug);
+  }
+  if (strat === 'milestone') {
+    return git.milestone_branch_template
+      .replace('{milestone}', milestone.version)
+      .replace('{slug}', generateSlugInternal(milestone.name) || 'milestone');
+  }
+  return null;
+}
+
 /**
  * Check if a path exists on disk.
  */
@@ -227,6 +268,7 @@ export const initExecutePhase: QueryHandler = async (args, projectDir) => {
     branching_strategy: config.git.branching_strategy,
     phase_branch_template: config.git.phase_branch_template,
     milestone_branch_template: config.git.milestone_branch_template,
+    semantic_release_branch_template: config.git.semantic_release_branch_template,
     verifier_enabled: config.workflow.verifier,
     phase_found: phaseFound,
     phase_dir: (phaseInfo?.directory as string) ?? null,
@@ -239,16 +281,16 @@ export const initExecutePhase: QueryHandler = async (args, projectDir) => {
     incomplete_plans: incompletePlans,
     plan_count: plans.length,
     incomplete_count: incompletePlans.length,
-    branch_name: config.git.branching_strategy === 'phase' && phaseInfo
-      ? config.git.phase_branch_template
-          .replace('{project}', projectCode)
-          .replace('{phase}', phaseNumber || '')
-          .replace('{slug}', phaseSlug || 'phase')
-      : config.git.branching_strategy === 'milestone'
-        ? config.git.milestone_branch_template
-            .replace('{milestone}', milestone.version)
-            .replace('{slug}', generateSlugInternal(milestone.name) || 'milestone')
-        : null,
+    branch_name: computeBranchNameForPhase(
+      config.git,
+      phaseInfo,
+      roadmapPhase,
+      milestone,
+      projectCode,
+    ),
+    phase_type: config.git.branching_strategy === 'semantic-release'
+      ? ((roadmapPhase?.phase_type as string) || 'feat')
+      : null,
     milestone_version: milestone.version,
     milestone_name: milestone.name,
     milestone_slug: generateSlugInternal(milestone.name),
@@ -579,9 +621,20 @@ export const initPhaseOp: QueryHandler = async (args, projectDir) => {
   const phaseFound = !!(phaseInfo && phaseInfo.found);
   const phaseNumber = (phaseInfo?.phase_number as string) || null;
   const plans = (phaseInfo?.plans || []) as string[];
+  const milestone = await getMilestoneInfo(projectDir);
+  const projectCode = ((config as Record<string, unknown>).project_code as string) || '';
 
   const result: Record<string, unknown> = {
     commit_docs: config.commit_docs,
+    branching_strategy: config.git.branching_strategy,
+    branch_name: computeBranchNameForPhase(
+      config.git,
+      phaseInfo,
+      roadmapPhase,
+      milestone,
+      projectCode,
+    ),
+    phase_type: (roadmapPhase?.phase_type as string) || 'feat',
     brave_search: config.brave_search,
     firecrawl: config.firecrawl,
     exa_search: config.exa_search,

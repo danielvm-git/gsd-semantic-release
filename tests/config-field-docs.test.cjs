@@ -120,6 +120,8 @@ describe('config-field-docs', () => {
       'git.base_branch',
       'git.phase_branch_template',
       'git.milestone_branch_template',
+      'git.quick_branch_template',
+      'git.semantic_release_branch_template',
     ];
     const missing = gitFields.filter(f => !content.includes(`\`${f}\``));
     assert.deepStrictEqual(

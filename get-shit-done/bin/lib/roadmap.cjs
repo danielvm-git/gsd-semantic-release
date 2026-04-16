@@ -6,6 +6,24 @@ const fs = require('fs');
 const path = require('path');
 const { escapeRegex, normalizePhaseName, planningPaths, withPlanningLock, output, error, findPhaseInternal, stripShippedMilestones, extractCurrentMilestone, replaceInCurrentMilestone, phaseTokenMatches, atomicWriteFileSync } = require('./core.cjs');
 
+const SEMANTIC_PHASE_TYPES = new Set(['feat', 'fix', 'refactor', 'breaking']);
+function extractPhaseTypeFromRoadmapSection(section) {
+  if (!section) return 'feat';
+  const patterns = [
+    /\*\*Type\*\*[:\s]+\*?\*?\s*(feat|fix|refactor|breaking)\b/i,
+    /(?:^|\n)[-*]\s*Type:\s*(feat|fix|refactor|breaking)\b/im,
+    /\nType:\s*(feat|fix|refactor|breaking)\b/im,
+  ];
+  for (const re of patterns) {
+    const m = section.match(re);
+    if (m) {
+      const t = String(m[1] || '').toLowerCase().trim();
+      return SEMANTIC_PHASE_TYPES.has(t) ? t : 'feat';
+    }
+  }
+  return 'feat';
+}
+
 /**
  * Search for a phase header (and its section) within the given content string.
  * Returns a result object if found (either a full match or a malformed_roadmap
@@ -67,6 +85,7 @@ function searchPhaseInContent(content, escapedPhase, phaseNum) {
     phase_number: phaseNum,
     phase_name: phaseName,
     goal,
+    phase_type: extractPhaseTypeFromRoadmapSection(section),
     success_criteria,
     section,
   };

@@ -13,6 +13,7 @@ Configuration options for `.planning/` directory behavior.
   "base_branch": null,
   "phase_branch_template": "gsd/phase-{phase}-{slug}",
   "milestone_branch_template": "gsd/{milestone}-{slug}",
+  "semantic_release_branch_template": "{type}/phase-{phase}-{slug}",
   "quick_branch_template": null
 },
 "manager": {
@@ -28,11 +29,12 @@ Configuration options for `.planning/` directory behavior.
 |--------|---------|-------------|
 | `commit_docs` | `true` | Whether to commit planning artifacts to git |
 | `search_gitignored` | `false` | Add `--no-ignore` to broad rg searches |
-| `git.branching_strategy` | `"none"` | Git branching approach: `"none"`, `"phase"`, or `"milestone"` |
+| `git.branching_strategy` | `"none"` | Git branching approach: `"none"`, `"phase"`, `"milestone"`, or `"semantic-release"` |
 | `git.base_branch` | `null` (auto-detect) | Target branch for PRs and merges (e.g. `"master"`, `"develop"`). When `null`, auto-detects from `git symbolic-ref refs/remotes/origin/HEAD`, falling back to `"main"`. |
 | `git.phase_branch_template` | `"gsd/phase-{phase}-{slug}"` | Branch template for phase strategy |
 | `git.milestone_branch_template` | `"gsd/{milestone}-{slug}"` | Branch template for milestone strategy |
 | `git.quick_branch_template` | `null` | Optional branch template for quick-task runs |
+| `git.semantic_release_branch_template` | `"{type}/phase-{phase}-{slug}"` | Branch naming when `branching_strategy` is `semantic-release`; `{type}` comes from ROADMAP phase **Type** (`breaking` → `feat` for branch prefix) |
 | `workflow.use_worktrees` | `true` | Whether executor agents run in isolated git worktrees. Set to `false` to disable worktrees — agents execute sequentially on the main working tree instead. Recommended for solo developers or when worktree merges cause issues. |
 | `workflow.subagent_timeout` | `300000` | Timeout in milliseconds for parallel subagent tasks (e.g. codebase mapping). Increase for large codebases or slower models. Default: 300000 (5 minutes). |
 | `workflow.inline_plan_threshold` | `2` | Plans with this many tasks or fewer execute inline (Pattern C) instead of spawning a subagent. Avoids ~14K token spawn overhead for small plans. Set to `0` to always spawn subagents. |
@@ -134,6 +136,7 @@ To use uncommitted mode:
 | `none` | Never | N/A | N/A |
 | `phase` | At `execute-phase` start | Single phase | User merges after phase |
 | `milestone` | At first `execute-phase` of milestone | Entire milestone | At `complete-milestone` |
+| `semantic-release` | At `execute-phase` start (same timing as `phase`) | Single phase per branch | Squash PR to default branch; CI runs [semantic-release](https://github.com/semantic-release/semantic-release) |
 
 **When `git.branching_strategy: "none"` (default):**
 - All work commits to current branch
@@ -152,6 +155,14 @@ To use uncommitted mode:
 - All phases in milestone commit to same branch
 - `complete-milestone` offers to merge milestone branch to main
 
+**When `git.branching_strategy: "semantic-release"`:**
+- Same branch creation timing as `"phase"` — one branch per phase before execution
+- Branch name from `semantic_release_branch_template` (default `{type}/phase-{phase}-{slug}`)
+- `{type}` is read from the phase detail block in ROADMAP.md: line `**Type**: feat` (or `fix`, `refactor`, `breaking`). Defaults to `feat` if omitted. `breaking` uses `feat` as the git branch prefix but `/gsd-ship` uses `feat!:` + `BREAKING CHANGE:` in the squash message for semver major
+- Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/); `hooks/gsd-validate-commit.sh` enforces format when this strategy is active (in addition to optional `hooks.community`)
+- `/gsd-ship` generates a conventional PR title from `phase_type` + `padded_phase`; squash-merge to `main` so semantic-release sees one release-driving commit per phase
+- `complete-milestone` skips manual `git tag` — versioning is owned by semantic-release on CI
+
 **Template variables:**
 
 | Variable | Available in | Description |
@@ -159,6 +170,7 @@ To use uncommitted mode:
 | `{phase}` | phase_branch_template | Zero-padded phase number (e.g., "03") |
 | `{slug}` | Both | Lowercase, hyphenated name |
 | `{milestone}` | milestone_branch_template | Milestone version (e.g., "v1.0") |
+| `{type}` | semantic_release_branch_template | `feat`, `fix`, or `refactor` from ROADMAP **Type** (`breaking` → `feat` for branch prefix) |
 
 **Checking the config:**
 
@@ -212,6 +224,7 @@ Squash merge is recommended — keeps main branch history clean while preserving
 | `none` | Solo development, simple projects |
 | `phase` | Code review per phase, granular rollback, team collaboration |
 | `milestone` | Release branches, staging environments, PR per version |
+| `semantic-release` | Libraries/apps with automated semver + changelog from conventional commits on the default branch |
 
 </branching_strategy_behavior>
 
@@ -272,11 +285,12 @@ Set via `git.*` namespace (e.g., `"git": { "branching_strategy": "phase" }`).
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
-| `git.branching_strategy` | string | `"none"` | `"none"`, `"phase"`, `"milestone"` | Git branching approach for phase/milestone isolation |
+| `git.branching_strategy` | string | `"none"` | `"none"`, `"phase"`, `"milestone"`, `"semantic-release"` | Git branching approach for phase/milestone isolation |
 | `git.base_branch` | string\|null | `null` (auto-detect) | Any branch name | Target branch for PRs and merges; auto-detects from `origin/HEAD` when `null` |
 | `git.phase_branch_template` | string | `"gsd/phase-{phase}-{slug}"` | Template with `{phase}`, `{slug}` | Branch naming template for `phase` strategy |
 | `git.milestone_branch_template` | string | `"gsd/{milestone}-{slug}"` | Template with `{milestone}`, `{slug}` | Branch naming template for `milestone` strategy |
 | `git.quick_branch_template` | string\|null | `null` | Template with `{slug}` | Optional branch template for quick-task runs |
+| `git.semantic_release_branch_template` | string | `"{type}/phase-{phase}-{slug}"` | Must include `{phase}`; `{type}`, `{slug}` recommended | Branch names when using semantic-release strategy |
 
 ### Search & API Fields
 
@@ -357,7 +371,7 @@ Several config fields affect each other or trigger special behavior:
 
 1. **`commit_docs` auto-detection** -- When no explicit value is set in config.json and `.planning/` is in `.gitignore`, `commit_docs` automatically resolves to `false`. An explicit `true` or `false` in config always overrides auto-detection.
 
-2. **`branching_strategy` controls branch templates** -- The `phase_branch_template` and `milestone_branch_template` fields are only used when `branching_strategy` is set to `"phase"` or `"milestone"` respectively. When `branching_strategy` is `"none"`, all template fields are ignored.
+2. **`branching_strategy` controls branch templates** -- The `phase_branch_template` and `milestone_branch_template` fields are only used when `branching_strategy` is set to `"phase"` or `"milestone"` respectively. `semantic_release_branch_template` is used when `branching_strategy` is `"semantic-release"`. When `branching_strategy` is `"none"`, all template fields are ignored.
 
 3. **`context_window` threshold triggers** -- When `context_window >= 500000`, workflows enable adaptive context enrichment: full-body reads of prior phase SUMMARYs, cross-phase context injection in plan-phase, and deeper read depth for anti-pattern references. Below 500000, only frontmatter and summaries are read.
 
@@ -420,6 +434,28 @@ Several config fields affect each other or trigger special behavior:
   "response_language": "English"
 }
 ```
+
+### Semantic-release (automated semver)
+
+```json
+{
+  "model_profile": "balanced",
+  "commit_docs": true,
+  "git": {
+    "branching_strategy": "semantic-release",
+    "base_branch": "main",
+    "semantic_release_branch_template": "{type}/phase-{phase}-{slug}"
+  },
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "use_worktrees": true
+  }
+}
+```
+
+ROADMAP.md phase blocks should include **`**Type**: feat`** (or `fix`, `refactor`, `breaking`) so branch names and `/gsd-ship` PR titles align with [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Large Codebase -- 1M Context with Extended Timeouts
 

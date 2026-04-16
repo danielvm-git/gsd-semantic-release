@@ -1,6 +1,6 @@
 <purpose>
 
-Mark a shipped version (v1.0, v1.1, v2.0) as complete. Creates historical record in MILESTONES.md, performs full PROJECT.md evolution review, reorganizes ROADMAP.md with milestone groupings, and tags the release in git.
+Mark a shipped version (v1.0, v1.1, v2.0) as complete. Creates historical record in MILESTONES.md, performs full PROJECT.md evolution review, reorganizes ROADMAP.md with milestone groupings, and tags the release in git (unless `git.branching_strategy` is `semantic-release` — then tags are owned by CI semantic-release).
 
 </purpose>
 
@@ -616,6 +616,8 @@ fi
 
 **If "none":** Skip to git_tag.
 
+**If "semantic-release":** Skip the bulk merge loop below (each phase should already be squash-merged to `${BASE_BRANCH}` via `/gsd-ship` so CI can run `semantic-release`). Optionally list local `feat/phase-*`, `fix/phase-*`, or `refactor/phase-*` branches and offer to delete them if merged. Then continue to `git_tag` (which skips manual tagging for this strategy).
+
 **For "phase" strategy:**
 
 ```bash
@@ -726,7 +728,18 @@ fi
 
 <step name="git_tag">
 
-Create git tag:
+**If `branching_strategy` is `semantic-release`:** Do **not** create a manual `v[X.Y]` git tag here — [semantic-release](https://github.com/semantic-release/semantic-release) on CI derives the next version from conventional commits on the default branch (each phase PR should be one squash merge with a `feat:` / `fix:` / `refactor:` / `feat!:` + `BREAKING CHANGE:` subject).
+
+Present to the user:
+- **Milestone complete** — planning archive and `MILESTONES.md` are still updated as usual.
+- **Versioning:** Ensure the default branch has the expected squash-merge commits; run `semantic-release` in CI (or locally with `semantic-release --dry-run` only if the project documents it) to preview the next version and generated changelog.
+- **Heuristic preview (optional):** On the default branch, `git log` since the last `v*` tag — each `feat(` → minor, each `fix(` → patch, any `BREAKING CHANGE` or `feat!` → major; semantic-release applies rules in order across all commits since last release.
+
+Skip the commands below for this strategy.
+
+---
+
+**Otherwise** (`none`, `phase`, or `milestone`): Create git tag:
 
 ```bash
 git tag -a v[X.Y] -m "v[X.Y] [Name]

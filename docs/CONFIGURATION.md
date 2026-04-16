@@ -63,6 +63,7 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
     "branching_strategy": "none",
     "phase_branch_template": "gsd/phase-{phase}-{slug}",
     "milestone_branch_template": "gsd/{milestone}-{slug}",
+    "semantic_release_branch_template": "{type}/phase-{phase}-{slug}",
     "quick_branch_template": null
   },
   "gates": {
@@ -299,9 +300,10 @@ The `features.*` namespace is a dynamic key pattern — new feature flags can be
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `git.branching_strategy` | enum | `none` | `none`, `phase`, or `milestone` |
+| `git.branching_strategy` | enum | `none` | `none`, `phase`, `milestone`, or `semantic-release` |
 | `git.phase_branch_template` | string | `gsd/phase-{phase}-{slug}` | Branch name template for phase strategy |
 | `git.milestone_branch_template` | string | `gsd/{milestone}-{slug}` | Branch name template for milestone strategy |
+| `git.semantic_release_branch_template` | string | `{type}/phase-{phase}-{slug}` | Branch template when strategy is `semantic-release`; `{type}` from ROADMAP **Type** (`breaking` → `feat` on branch) |
 | `git.quick_branch_template` | string or null | `null` | Optional branch name template for `/gsd-quick` tasks |
 
 ### Strategy Comparison
@@ -311,6 +313,9 @@ The `features.*` namespace is a dynamic key pattern — new feature flags can be
 | `none` | Never | N/A | N/A | Solo development, simple projects |
 | `phase` | At `execute-phase` start | One phase | User merges after phase | Code review per phase, granular rollback |
 | `milestone` | At first `execute-phase` | All phases in milestone | At `complete-milestone` | Release branches, PR per version |
+| `semantic-release` | At `execute-phase` start (like `phase`) | One phase per branch | Squash PR to default branch; CI runs [semantic-release](https://github.com/semantic-release/semantic-release) | Automated semver + changelog from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) |
+
+With **`semantic-release`**, add **`**Type**: feat`** (or `fix`, `refactor`, `breaking`) to each phase block in `ROADMAP.md` so branch names and `/gsd-ship` PR titles match release semantics. See [planning-config](https://github.com/gsd-build/get-shit-done/blob/main/get-shit-done/references/planning-config.md) and `git-integration.md` in the installed bundle.
 
 ### Template Variables
 
@@ -319,6 +324,7 @@ The `features.*` namespace is a dynamic key pattern — new feature flags can be
 | `{phase}` | `phase_branch_template` | `03` (zero-padded) |
 | `{slug}` | Both templates | `user-authentication` (lowercase, hyphenated) |
 | `{milestone}` | `milestone_branch_template` | `v1.0` |
+| `{type}` | `semantic_release_branch_template` | `feat`, `fix`, or `refactor` from ROADMAP **Type** |
 | `{num}` / `{quick}` | `quick_branch_template` | `260317-abc` (quick task ID) |
 
 Example quick-task branching:

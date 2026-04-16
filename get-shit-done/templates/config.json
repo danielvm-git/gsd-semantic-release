@@ -25,6 +25,10 @@
     "search_gitignored": false,
     "sub_repos": []
   },
+  "git": {
+    "branching_strategy": "none",
+    "semantic_release_branch_template": "{type}/phase-{phase}-{slug}"
+  },
   "parallelization": {
     "enabled": true,
     "plan_level": true,

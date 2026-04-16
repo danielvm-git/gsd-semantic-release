@@ -68,7 +68,7 @@ const VALID_CONFIG_KEYS = new Set([
   'workflow.code_review',
   'workflow.code_review_depth',
   'git.branching_strategy', 'git.base_branch', 'git.phase_branch_template',
-  'git.milestone_branch_template', 'git.quick_branch_template',
+  'git.milestone_branch_template', 'git.quick_branch_template', 'git.semantic_release_branch_template',
   'planning.commit_docs', 'planning.search_gitignored',
   'workflow.subagent_timeout',
   'hooks.context_warnings',
@@ -366,6 +366,7 @@ export const configNewProject: QueryHandler = async (args, projectDir) => {
       phase_branch_template: 'gsd/phase-{phase}-{slug}',
       milestone_branch_template: 'gsd/{milestone}-{slug}',
       quick_branch_template: null,
+      semantic_release_branch_template: '{type}/phase-{phase}-{slug}',
     },
     workflow: {
       research: true,

@@ -7,6 +7,7 @@
  *   - W013: context_window validation
  *   - W014: phase_branch_template placeholder validation
  *   - W015: milestone_branch_template placeholder validation
+ *   - W016: semantic_release_branch_template placeholder validation
  *   - stateReplaceFieldWithFallback field-miss warning
  *   - Boundary conditions and edge cases
  */
@@ -194,6 +195,45 @@ describe('config field validation', () => {
     assert.ok(
       output.warnings.some(w => w.code === 'W015'),
       `Expected W015 in warnings: ${JSON.stringify(output.warnings)}`
+    );
+  });
+
+  test('W012: git.branching_strategy semantic-release is valid (no W012)', () => {
+    writeMinimalProjectMd(tmpDir);
+    writeMinimalRoadmap(tmpDir, ['1']);
+    writeMinimalStateMd(tmpDir, '# Session State\n\nPhase 1 in progress.\n');
+    writeValidConfigJson(tmpDir, { git: { branching_strategy: 'semantic-release' } });
+    fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
+
+    const result = runGsdTools('validate health', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok(
+      !output.warnings.some(w => w.code === 'W012'),
+      `Should not warn W012 for semantic-release: ${JSON.stringify(output.warnings)}`
+    );
+  });
+
+  test('W016: semantic_release_branch_template missing {phase} when strategy is semantic-release', () => {
+    writeMinimalProjectMd(tmpDir);
+    writeMinimalRoadmap(tmpDir, ['1']);
+    writeMinimalStateMd(tmpDir, '# Session State\n\nPhase 1 in progress.\n');
+    writeValidConfigJson(tmpDir, {
+      git: {
+        branching_strategy: 'semantic-release',
+        semantic_release_branch_template: '{type}/bad-{slug}',
+      },
+    });
+    fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-a'), { recursive: true });
+
+    const result = runGsdTools('validate health', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok(
+      output.warnings.some(w => w.code === 'W016'),
+      `Expected W016 in warnings: ${JSON.stringify(output.warnings)}`
     );
   });
 });

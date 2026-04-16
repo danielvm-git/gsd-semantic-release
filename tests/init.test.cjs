@@ -267,6 +267,64 @@ describe('init commands', () => {
     const output = JSON.parse(result.output);
     assert.strictEqual(output.phase_req_ids, null);
   });
+
+  test('init execute-phase semantic-release: branch_name from ROADMAP Type', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '03-api-layer');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(phaseDir, '03-01-PLAN.md'), '# Plan');
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      '# Roadmap\n\n### Phase 3: API Layer\n**Goal:** REST\n**Type**: fix\n**Plans:** 1 plan\n'
+    );
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({
+      git: { branching_strategy: 'semantic-release' },
+    }, null, 2));
+
+    const result = runGsdTools('init execute-phase 3', tmpDir);
+    assert.ok(result.success, result.error);
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.branch_name, 'fix/phase-03-api-layer');
+    assert.strictEqual(output.phase_type, 'fix');
+  });
+
+  test('init execute-phase semantic-release: breaking uses feat branch prefix', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '04-drop-v1');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(phaseDir, '04-01-PLAN.md'), '# Plan');
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      '# Roadmap\n\n### Phase 4: Drop v1\n**Goal:** Remove legacy\n**Type**: breaking\n**Plans:** 1 plan\n'
+    );
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({
+      git: { branching_strategy: 'semantic-release' },
+    }, null, 2));
+
+    const result = runGsdTools('init execute-phase 4', tmpDir);
+    assert.ok(result.success, result.error);
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.branch_name, 'feat/phase-04-drop-v1');
+    assert.strictEqual(output.phase_type, 'breaking');
+  });
+
+  test('init phase-op includes branch_name and phase_type for semantic-release', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '02-auth');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(phaseDir, '02-01-PLAN.md'), '# Plan');
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'ROADMAP.md'),
+      '# Roadmap\n\n### Phase 2: Auth\n**Goal:** Login\n**Type**: refactor\n**Plans:** 1 plan\n'
+    );
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({
+      git: { branching_strategy: 'semantic-release' },
+    }, null, 2));
+
+    const result = runGsdTools('init phase-op 2', tmpDir);
+    assert.ok(result.success, result.error);
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.branching_strategy, 'semantic-release');
+    assert.strictEqual(output.branch_name, 'refactor/phase-02-auth');
+    assert.strictEqual(output.phase_type, 'refactor');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

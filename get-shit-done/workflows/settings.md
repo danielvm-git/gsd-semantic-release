@@ -139,7 +139,8 @@ AskUserQuestion([
     options: [
       { label: "None (Recommended)", description: "Commit directly to current branch" },
       { label: "Per Phase", description: "Create branch for each phase (gsd/phase-{N}-{name})" },
-      { label: "Per Milestone", description: "Create branch for entire milestone (gsd/{version}-{name})" }
+      { label: "Per Milestone", description: "Create branch for entire milestone (gsd/{version}-{name})" },
+      { label: "Semantic Release", description: "Per-phase branches from ROADMAP **Type** (feat/fix/refactor/breaking); conventional commits + squash PRs for automated semver" }
     ]
   },
   {
@@ -205,7 +206,8 @@ Merge new settings into existing config.json:
     "use_worktrees": true/false
   },
   "git": {
-    "branching_strategy": "none" | "phase" | "milestone",
+    "branching_strategy": "none" | "phase" | "milestone" | "semantic-release",
+    "semantic_release_branch_template": "{type}/phase-{phase}-{slug}",
     "quick_branch_template": <string|null>
   },
   "hooks": {
@@ -285,7 +287,7 @@ Display:
 | UI Phase             | {On/Off} |
 | UI Safety Gate       | {On/Off} |
 | AI Integration Phase | {On/Off} |
-| Git Branching        | {None/Per Phase/Per Milestone} |
+| Git Branching        | {None/Per Phase/Per Milestone/Semantic Release} |
 | Skip Discuss         | {On/Off} |
 | Context Warnings     | {On/Off} |
 | Saved as Defaults    | {Yes/No} |
@@ -304,7 +306,7 @@ Quick commands:
 
 <success_criteria>
 - [ ] Current config read
-- [ ] User presented with 14 settings (profile + 11 workflow toggles + git branching + ctx warnings)
+- [ ] User presented with settings (profile + workflow toggles + git branching including semantic-release option + ctx warnings)
 - [ ] Config updated with model_profile, workflow, and git sections
 - [ ] User offered to save as global defaults (~/.gsd/defaults.json)
 - [ ] Changes confirmed to user

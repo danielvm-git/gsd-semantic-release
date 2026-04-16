@@ -7,6 +7,35 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, planningPaths, planningDir, planningRoot, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
 
+/**
+ * Pre-compute git branch name for execute-phase / phase-op (phase, milestone, semantic-release strategies).
+ */
+function computeBranchNameForPhase(config, phaseInfo, roadmapPhase, milestone) {
+  if (!phaseInfo) return null;
+  if (config.branching_strategy === 'semantic-release') {
+    const phaseType = roadmapPhase?.phase_type || 'feat';
+    const branchType = phaseType === 'breaking' ? 'feat' : phaseType;
+    const tpl = config.semantic_release_branch_template || '{type}/phase-{phase}-{slug}';
+    return tpl
+      .replace('{project}', config.project_code || '')
+      .replace('{type}', branchType)
+      .replace('{phase}', phaseInfo.phase_number)
+      .replace('{slug}', phaseInfo.phase_slug || 'phase');
+  }
+  if (config.branching_strategy === 'phase') {
+    return config.phase_branch_template
+      .replace('{project}', config.project_code || '')
+      .replace('{phase}', phaseInfo.phase_number)
+      .replace('{slug}', phaseInfo.phase_slug || 'phase');
+  }
+  if (config.branching_strategy === 'milestone') {
+    return config.milestone_branch_template
+      .replace('{milestone}', milestone.version)
+      .replace('{slug}', generateSlugInternal(milestone.name) || 'milestone');
+  }
+  return null;
+}
+
 function getLatestCompletedMilestone(cwd) {
   const milestonesPath = path.join(planningRoot(cwd), 'MILESTONES.md');
   if (!fs.existsSync(milestonesPath)) return null;
@@ -122,6 +151,7 @@ function cmdInitExecutePhase(cwd, phase, raw, options = {}) {
     branching_strategy: config.branching_strategy,
     phase_branch_template: config.phase_branch_template,
     milestone_branch_template: config.milestone_branch_template,
+    semantic_release_branch_template: config.semantic_release_branch_template,
     verifier_enabled: config.verifier,
 
     // Phase info
@@ -140,16 +170,8 @@ function cmdInitExecutePhase(cwd, phase, raw, options = {}) {
     incomplete_count: phaseInfo?.incomplete_plans?.length || 0,
 
     // Branch name (pre-computed)
-    branch_name: config.branching_strategy === 'phase' && phaseInfo
-      ? config.phase_branch_template
-          .replace('{project}', config.project_code || '')
-          .replace('{phase}', phaseInfo.phase_number)
-          .replace('{slug}', phaseInfo.phase_slug || 'phase')
-      : config.branching_strategy === 'milestone'
-        ? config.milestone_branch_template
-            .replace('{milestone}', milestone.version)
-            .replace('{slug}', generateSlugInternal(milestone.name) || 'milestone')
-        : null,
+    branch_name: computeBranchNameForPhase(config, phaseInfo, roadmapPhase, milestone),
+    phase_type: roadmapPhase?.phase_type || (config.branching_strategy === 'semantic-release' ? 'feat' : null),
 
     // Milestone info
     milestone_version: milestone.version,
@@ -648,19 +670,20 @@ function cmdInitVerifyWork(cwd, phase, raw) {
 
 function cmdInitPhaseOp(cwd, phase, raw) {
   const config = loadConfig(cwd);
+  const milestone = getMilestoneInfo(cwd);
   let phaseInfo = findPhaseInternal(cwd, phase);
 
   // If the only disk match comes from an archived milestone, prefer the
   // current milestone's ROADMAP entry so discuss-phase and similar flows
   // don't attach to shipped work that reused the same phase number.
   if (phaseInfo?.archived) {
-    const roadmapPhase = getRoadmapPhaseInternal(cwd, phase);
-    if (roadmapPhase?.found) {
-      const phaseName = roadmapPhase.phase_name;
+    const roadmapPhaseArchived = getRoadmapPhaseInternal(cwd, phase);
+    if (roadmapPhaseArchived?.found) {
+      const phaseName = roadmapPhaseArchived.phase_name;
       phaseInfo = {
         found: true,
         directory: null,
-        phase_number: roadmapPhase.phase_number,
+        phase_number: roadmapPhaseArchived.phase_number,
         phase_name: phaseName,
         phase_slug: phaseName ? phaseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : null,
         plans: [],
@@ -675,13 +698,13 @@ function cmdInitPhaseOp(cwd, phase, raw) {
 
   // Fallback to ROADMAP.md if no directory exists (e.g., Plans: TBD)
   if (!phaseInfo) {
-    const roadmapPhase = getRoadmapPhaseInternal(cwd, phase);
-    if (roadmapPhase?.found) {
-      const phaseName = roadmapPhase.phase_name;
+    const roadmapPhaseFallback = getRoadmapPhaseInternal(cwd, phase);
+    if (roadmapPhaseFallback?.found) {
+      const phaseName = roadmapPhaseFallback.phase_name;
       phaseInfo = {
         found: true,
         directory: null,
-        phase_number: roadmapPhase.phase_number,
+        phase_number: roadmapPhaseFallback.phase_number,
         phase_name: phaseName,
         phase_slug: phaseName ? phaseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : null,
         plans: [],
@@ -694,9 +717,14 @@ function cmdInitPhaseOp(cwd, phase, raw) {
     }
   }
 
+  const roadmapPhase = getRoadmapPhaseInternal(cwd, phase);
+
   const result = {
     // Config
     commit_docs: config.commit_docs,
+    branching_strategy: config.branching_strategy,
+    branch_name: computeBranchNameForPhase(config, phaseInfo, roadmapPhase, milestone),
+    phase_type: roadmapPhase?.phase_type || 'feat',
     brave_search: config.brave_search,
     firecrawl: config.firecrawl,
     exa_search: config.exa_search,

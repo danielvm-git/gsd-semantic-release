@@ -251,6 +251,22 @@ Each plan produces 2-4 commits (tasks + metadata). Clear, granular, bisectable.
 
 </commit_strategy_rationale>
 
+<semantic_release_branching>
+
+## `git.branching_strategy: "semantic-release"`
+
+When this strategy is set in `.planning/config.json`, GSD aligns git flow with [semantic-release](https://github.com/semantic-release/semantic-release) and [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
+
+1. **ROADMAP phase `**Type**`:** Each phase detail block may declare `**Type**: feat` (default if omitted), `fix`, `refactor`, or `breaking`. This drives the branch prefix from `git.semantic_release_branch_template` (default `{type}/phase-{phase}-{slug}`). `breaking` uses `feat` as the branch folder prefix; the squash PR message uses `feat!:` plus a `BREAKING CHANGE:` footer for a **major** bump.
+2. **Per-task commits:** Unchanged — still `feat(08-02): …` style inside the phase branch (see `<format name="task-completion">` above).
+3. **Ship:** `/gsd-ship` builds a **single-line conventional PR title** from `phase_type` + `padded_phase` so that, after **squash merge** to the default branch, semantic-release sees one release-analyzable commit per phase (`feat:` → minor, `fix:` → patch, breaking footer → major).
+4. **Hooks:** `hooks/gsd-validate-commit.sh` runs Conventional Commit checks when this strategy is active (even if `hooks.community` is false).
+5. **Milestone close:** `/gsd-complete-milestone` does **not** create a manual `v*` git tag — tags and changelog are produced by semantic-release in CI.
+
+**Preview deployments:** For static sites or packages, configure CI (e.g. GitHub Actions, or [Appwrite Sites PR previews](https://appwrite.io/docs/products/sites/previews)) to publish from the PR branch — orthogonal to GSD, but often paired with this workflow.
+
+</semantic_release_branching>
+
 <sub_repos_support>
 
 ## Multi-Repo Workspace Support (sub_repos)

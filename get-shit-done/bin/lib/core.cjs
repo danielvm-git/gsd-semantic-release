@@ -247,6 +247,7 @@ const CONFIG_DEFAULTS = {
   phase_branch_template: 'gsd/phase-{phase}-{slug}',
   milestone_branch_template: 'gsd/{milestone}-{slug}',
   quick_branch_template: null,
+  semantic_release_branch_template: '{type}/phase-{phase}-{slug}',
   research: true,
   plan_checker: true,
   verifier: true,
@@ -367,6 +368,7 @@ function loadConfig(cwd) {
       phase_branch_template: get('phase_branch_template', { section: 'git', field: 'phase_branch_template' }) ?? defaults.phase_branch_template,
       milestone_branch_template: get('milestone_branch_template', { section: 'git', field: 'milestone_branch_template' }) ?? defaults.milestone_branch_template,
       quick_branch_template: get('quick_branch_template', { section: 'git', field: 'quick_branch_template' }) ?? defaults.quick_branch_template,
+      semantic_release_branch_template: get('semantic_release_branch_template', { section: 'git', field: 'semantic_release_branch_template' }) ?? defaults.semantic_release_branch_template,
       research: get('research', { section: 'workflow', field: 'research' }) ?? defaults.research,
       plan_checker: get('plan_checker', { section: 'workflow', field: 'plan_check' }) ?? defaults.plan_checker,
       verifier: get('verifier', { section: 'workflow', field: 'verifier' }) ?? defaults.verifier,
@@ -1232,6 +1234,33 @@ function replaceInCurrentMilestone(content, pattern, replacement) {
 
 // ─── Roadmap & model utilities ────────────────────────────────────────────────
 
+const SEMANTIC_PHASE_TYPES = new Set(['feat', 'fix', 'refactor', 'breaking']);
+
+/**
+ * Parse optional **Type:** / `- Type:` from a ROADMAP phase detail section.
+ * Used for git.branching_strategy semantic-release (branch prefix + PR title).
+ * @param {string|null|undefined} section
+ * @returns {'feat'|'fix'|'refactor'|'breaking'}
+ */
+function normalizeRoadmapPhaseType(raw) {
+  const t = String(raw || '').toLowerCase().trim();
+  return SEMANTIC_PHASE_TYPES.has(t) ? t : 'feat';
+}
+
+function extractPhaseTypeFromRoadmapSection(section) {
+  if (!section) return 'feat';
+  const patterns = [
+    /\*\*Type\*\*[:\s]+\*?\*?\s*(feat|fix|refactor|breaking)\b/i,
+    /(?:^|\n)[-*]\s*Type:\s*(feat|fix|refactor|breaking)\b/im,
+    /\nType:\s*(feat|fix|refactor|breaking)\b/im,
+  ];
+  for (const re of patterns) {
+    const m = section.match(re);
+    if (m) return normalizeRoadmapPhaseType(m[1]);
+  }
+  return 'feat';
+}
+
 function getRoadmapPhaseInternal(cwd, phaseNum) {
   if (!phaseNum) return null;
   const roadmapPath = path.join(planningDir(cwd), 'ROADMAP.md');
@@ -1254,12 +1283,14 @@ function getRoadmapPhaseInternal(cwd, phaseNum) {
 
     const goalMatch = section.match(/\*\*Goal(?:\*\*:|\*?\*?:\*\*)\s*([^\n]+)/i);
     const goal = goalMatch ? goalMatch[1].trim() : null;
+    const phase_type = extractPhaseTypeFromRoadmapSection(section);
 
     return {
       found: true,
       phase_number: phaseNum.toString(),
       phase_name: phaseName,
       goal,
+      phase_type,
       section,
     };
   } catch {

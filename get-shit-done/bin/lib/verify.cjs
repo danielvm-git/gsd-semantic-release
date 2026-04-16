@@ -805,12 +805,23 @@ function cmdValidateHealth(cwd, options, raw) {
       const configRaw = fs.readFileSync(configPath, 'utf-8');
       const configParsed = JSON.parse(configRaw);
 
-      // Validate branching_strategy
-      const validStrategies = ['none', 'phase', 'milestone'];
-      if (configParsed.branching_strategy && !validStrategies.includes(configParsed.branching_strategy)) {
+      // Validate branching_strategy (top-level legacy or git.* canonical)
+      const validStrategies = ['none', 'phase', 'milestone', 'semantic-release'];
+      const bs =
+        (configParsed.git && configParsed.git.branching_strategy) ||
+        configParsed.branching_strategy;
+      if (bs && !validStrategies.includes(bs)) {
         addIssue('warning', 'W012',
-          `config.json: invalid branching_strategy "${configParsed.branching_strategy}"`,
+          `config.json: invalid branching_strategy "${bs}"`,
           `Valid values: ${validStrategies.join(', ')}`);
+      }
+      const srTpl =
+        (configParsed.git && configParsed.git.semantic_release_branch_template) ||
+        configParsed.semantic_release_branch_template;
+      if (bs === 'semantic-release' && srTpl && !srTpl.includes('{phase}')) {
+        addIssue('warning', 'W016',
+          'config.json: semantic_release_branch_template missing {phase} placeholder',
+          'Template must include {phase} (and usually {slug}, {type}) for semantic-release strategy');
       }
 
       // Validate context_window is a positive integer
