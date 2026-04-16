@@ -97,6 +97,7 @@ Built-in quality gates catch real problems: schema drift detection flags ORM cha
 - **Context-window-aware prompt thinning** — Automatic prompt size reduction for sub-200K models
 - **Project skills awareness** — 9 GSD agents now discover and use project-scoped skills
 - **30+ bug fixes** — Worktree safety, state management, installer paths, and health check optimizations
+- **Semantic-release branching** — `git.branching_strategy` can be set to `semantic-release` so phase branches, task commits, `/gsd-ship` PR titles, and milestone close align with automated semver and changelog on the default branch (see [docs/CONFIGURATION.md](docs/CONFIGURATION.md#git-branching))
 
 ---
 
@@ -215,6 +216,14 @@ node bin/install.js --claude --local
 The `build:hooks` step is required — it compiles hook sources into `hooks/dist/` which the installer copies from. Without it, hooks won't be installed and you'll get hook errors in Claude Code. (The npm release handles this automatically via `prepublishOnly`.)
 
 Installs to `./.claude/` for testing modifications before contributing.
+
+**Updating a local clone** (fork or contributor checkout — same steps as [docs/manual-update.md](docs/manual-update.md) without npm):
+
+1. Pull the latest default branch (replace `origin` / `main` if your remote or default branch differs): `git pull --rebase origin main`
+2. Build hooks: `npm run build:hooks` (same as `node scripts/build-hooks.js`)
+3. Re-run the installer for each runtime you use: `node bin/install.js --claude --global` (or `--local` and the flags from the tables above)
+4. Optional: `rm -f ~/.cache/gsd/gsd-update-check.json` so the update-check indicator resets
+5. Restart your AI runtime. If you had local edits under installed GSD paths, run `/gsd-reapply-patches` after updating (see manual-update doc).
 
 </details>
 

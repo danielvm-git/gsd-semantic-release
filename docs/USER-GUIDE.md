@@ -590,6 +590,7 @@ GSD stores project settings in `.planning/config.json`. Configure during `/gsd-n
     "branching_strategy": "none",
     "phase_branch_template": "gsd/phase-{phase}-{slug}",
     "milestone_branch_template": "gsd/{milestone}-{slug}",
+    "semantic_release_branch_template": "{type}/phase-{phase}-{slug}",
     "quick_branch_template": null
   }
 }
@@ -640,9 +641,10 @@ Disable workflow toggles to speed up phases in familiar domains or when conservi
 
 | Setting | Options | Default | What it Controls |
 |---------|---------|---------|------------------|
-| `git.branching_strategy` | `none`, `phase`, `milestone` | `none` | When and how branches are created |
+| `git.branching_strategy` | `none`, `phase`, `milestone`, `semantic-release` | `none` | When and how branches are created |
 | `git.phase_branch_template` | Template string | `gsd/phase-{phase}-{slug}` | Branch name for phase strategy |
 | `git.milestone_branch_template` | Template string | `gsd/{milestone}-{slug}` | Branch name for milestone strategy |
+| `git.semantic_release_branch_template` | Template string | `{type}/phase-{phase}-{slug}` | Branch name when strategy is `semantic-release`; `{type}` from ROADMAP **Type** (`breaking` maps to `feat` on the branch) |
 | `git.quick_branch_template` | Template string or `null` | `null` | Optional branch name for `/gsd-quick` tasks |
 
 **Branching strategies explained:**
@@ -652,8 +654,11 @@ Disable workflow toggles to speed up phases in familiar domains or when conservi
 | `none` | Never | N/A | Solo development, simple projects |
 | `phase` | At each `execute-phase` | One phase per branch | Code review per phase, granular rollback |
 | `milestone` | At first `execute-phase` | All phases share one branch | Release branches, PR per version |
+| `semantic-release` | At each `execute-phase` (like `phase`) | One phase per branch | Squash PR to default branch; CI runs [semantic-release](https://github.com/semantic-release/semantic-release) for semver and changelog from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) |
 
-**Template variables:** `{phase}` = zero-padded number (e.g., "03"), `{slug}` = lowercase hyphenated name, `{milestone}` = version (e.g., "v1.0"), `{num}` / `{quick}` = quick task ID (e.g., "260317-abc").
+**Template variables:** `{phase}` = zero-padded number (e.g., "03"), `{slug}` = lowercase hyphenated name, `{milestone}` = version (e.g., "v1.0"), `{type}` = `feat`, `fix`, or `refactor` from ROADMAP **Type** for `semantic_release_branch_template`, `{num}` / `{quick}` = quick task ID (e.g., "260317-abc").
+
+Full field descriptions and strategy comparison: [CONFIGURATION.md](CONFIGURATION.md#git-branching). Installed bundle: `get-shit-done/references/git-integration.md`.
 
 Example quick-task branching:
 

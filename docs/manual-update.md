@@ -14,7 +14,8 @@ Use this procedure when `npx get-shit-done-cc@latest` is unavailable — e.g. du
 git pull --rebase origin main
 
 # 2. Build the hooks dist (required — hooks/dist/ is generated, not checked in as source)
-node scripts/build-hooks.js
+npm run build:hooks
+# Equivalent: node scripts/build-hooks.js
 
 # 3. Run the installer directly
 node bin/install.js --claude --global
