@@ -225,14 +225,14 @@ jobs:
           PRE_VERSION: ${{ steps.prerelease.outputs.pre_version }}
         run: |
           sleep 10
-          PUBLISHED=$(npm view get-shit-done-cc@"$PRE_VERSION" version 2>/dev/null || echo "NOT_FOUND")
+          PUBLISHED=$(npm view @danielvm/gsd-semantic-release@"$PRE_VERSION" version 2>/dev/null || echo "NOT_FOUND")
           if [ "$PUBLISHED" != "$PRE_VERSION" ]; then
             echo "::error::Published version verification failed. Expected $PRE_VERSION, got $PUBLISHED"
             exit 1
           fi
-          echo "✓ Verified: get-shit-done-cc@$PRE_VERSION is live on npm"
+          echo "✓ Verified: @danielvm/gsd-semantic-release@$PRE_VERSION is live on npm"
           # Also verify dist-tag
-          NEXT_TAG=$(npm dist-tag ls get-shit-done-cc 2>/dev/null | grep "next:" | awk '{print $2}')
+          NEXT_TAG=$(npm dist-tag ls @danielvm/gsd-semantic-release 2>/dev/null | grep "next:" | awk '{print $2}')
           echo "✓ next tag points to: $NEXT_TAG"
 
       - name: Summary
@@ -245,7 +245,7 @@ jobs:
             echo "**DRY RUN** — npm publish, tagging, and push skipped" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "- Published to npm as \`next\`" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Install: \`npx get-shit-done-cc@next\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Install: \`npx @danielvm/gsd-semantic-release@next\`" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "To publish another pre-release: run \`rc\` again" >> "$GITHUB_STEP_SUMMARY"
@@ -361,7 +361,7 @@ jobs:
         run: |
           # Point next to the stable release so @next never returns something
           # older than @latest. This prevents stale pre-release installs.
-          npm dist-tag add "get-shit-done-cc@${VERSION}" next 2>/dev/null || true
+          npm dist-tag add "@danielvm/gsd-semantic-release@${VERSION}" next 2>/dev/null || true
           echo "✓ next dist-tag updated to v${VERSION}"
 
       - name: Verify publish
@@ -370,14 +370,14 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           sleep 10
-          PUBLISHED=$(npm view get-shit-done-cc@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
+          PUBLISHED=$(npm view @danielvm/gsd-semantic-release@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
           if [ "$PUBLISHED" != "$VERSION" ]; then
             echo "::error::Published version verification failed. Expected $VERSION, got $PUBLISHED"
             exit 1
           fi
-          echo "✓ Verified: get-shit-done-cc@$VERSION is live on npm"
+          echo "✓ Verified: @danielvm/gsd-semantic-release@$VERSION is live on npm"
           # Verify latest tag
-          LATEST_TAG=$(npm dist-tag ls get-shit-done-cc 2>/dev/null | grep "latest:" | awk '{print $2}')
+          LATEST_TAG=$(npm dist-tag ls @danielvm/gsd-semantic-release 2>/dev/null | grep "latest:" | awk '{print $2}')
           echo "✓ latest tag points to: $LATEST_TAG"
 
       - name: Summary
@@ -392,5 +392,5 @@ jobs:
             echo "- Published to npm as \`latest\`" >> "$GITHUB_STEP_SUMMARY"
             echo "- Tagged \`v${VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
             echo "- PR created to merge back to main" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Install: \`npx get-shit-done-cc@latest\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Install: \`npx @danielvm/gsd-semantic-release@latest\`" >> "$GITHUB_STEP_SUMMARY"
           fi

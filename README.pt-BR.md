@@ -8,19 +8,19 @@
 
 **Resolve context rot — a degradação de qualidade que acontece conforme o Claude enche a janela de contexto.**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/@danielvm%2Fgsd-semantic-release?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@danielvm/gsd-semantic-release)
+[![npm downloads](https://img.shields.io/npm/dm/@danielvm%2Fgsd-semantic-release?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@danielvm/gsd-semantic-release)
+[![Tests](https://img.shields.io/github/actions/workflow/status/danielvm-git/gsd-semantic-release/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/danielvm-git/gsd-semantic-release/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/mYgfVNfA2r)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
 [![$GSD Token](https://img.shields.io/badge/$GSD-Dexscreener-1C1C1C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgZmlsbD0iIzAwRkYwMCIvPjwvc3ZnPg==&logoColor=00FF00)](https://dexscreener.com/solana/dwudwjvan7bzkw9zwlbyv6kspdlvhwzrqy6ebk8xzxkv)
-[![GitHub stars](https://img.shields.io/github/stars/gsd-build/get-shit-done?style=for-the-badge&logo=github&color=181717)](https://github.com/gsd-build/get-shit-done)
+[![GitHub stars](https://img.shields.io/github/stars/danielvm-git/gsd-semantic-release?style=for-the-badge&logo=github&color=181717)](https://github.com/danielvm-git/gsd-semantic-release)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx @danielvm/gsd-semantic-release@latest
 ```
 
 **Funciona em Mac, Windows e Linux.**
@@ -88,7 +88,7 @@ Quality gates embutidos capturam problemas reais: detecção de schema drift sin
 ## Primeiros passos
 
 ```bash
-npx get-shit-done-cc@latest
+npx @danielvm/gsd-semantic-release@latest
 ```
 
 O instalador pede:
@@ -110,7 +110,7 @@ Verifique com:
 ### Mantendo atualizado
 
 ```bash
-npx get-shit-done-cc@latest
+npx @danielvm/gsd-semantic-release@latest
 ```
 
 <details>
@@ -118,49 +118,49 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global
-npx get-shit-done-cc --claude --local
+npx @danielvm/gsd-semantic-release --claude --global
+npx @danielvm/gsd-semantic-release --claude --local
 
 # OpenCode
-npx get-shit-done-cc --opencode --global
+npx @danielvm/gsd-semantic-release --opencode --global
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global
+npx @danielvm/gsd-semantic-release --gemini --global
 
 # Kilo
-npx get-shit-done-cc --kilo --global
-npx get-shit-done-cc --kilo --local
+npx @danielvm/gsd-semantic-release --kilo --global
+npx @danielvm/gsd-semantic-release --kilo --local
 
 # Codex
-npx get-shit-done-cc --codex --global
-npx get-shit-done-cc --codex --local
+npx @danielvm/gsd-semantic-release --codex --global
+npx @danielvm/gsd-semantic-release --codex --local
 
 # Copilot
-npx get-shit-done-cc --copilot --global
-npx get-shit-done-cc --copilot --local
+npx @danielvm/gsd-semantic-release --copilot --global
+npx @danielvm/gsd-semantic-release --copilot --local
 
 # Cursor
-npx get-shit-done-cc --cursor --global
-npx get-shit-done-cc --cursor --local
+npx @danielvm/gsd-semantic-release --cursor --global
+npx @danielvm/gsd-semantic-release --cursor --local
 
 # Antigravity
-npx get-shit-done-cc --antigravity --global
-npx get-shit-done-cc --antigravity --local
+npx @danielvm/gsd-semantic-release --antigravity --global
+npx @danielvm/gsd-semantic-release --antigravity --local
 
 # Augment
-npx get-shit-done-cc --augment --global     # Install to ~/.augment/
-npx get-shit-done-cc --augment --local      # Install to ./.augment/
+npx @danielvm/gsd-semantic-release --augment --global     # Install to ~/.augment/
+npx @danielvm/gsd-semantic-release --augment --local      # Install to ./.augment/
 
 # Trae
-npx get-shit-done-cc --trae --global        # Install to ~/.trae/
-npx get-shit-done-cc --trae --local         # Install to ./.trae/
+npx @danielvm/gsd-semantic-release --trae --global        # Install to ~/.trae/
+npx @danielvm/gsd-semantic-release --trae --local         # Install to ./.trae/
 
 # Cline
-npx get-shit-done-cc --cline --global       # Install to ~/.cline/
-npx get-shit-done-cc --cline --local        # Install to ./.clinerules
+npx @danielvm/gsd-semantic-release --cline --global       # Install to ~/.cline/
+npx @danielvm/gsd-semantic-release --cline --local        # Install to ./.clinerules
 
 # Todos
-npx get-shit-done-cc --all --global
+npx @danielvm/gsd-semantic-release --all --global
 ```
 
 Use `--global` (`-g`) ou `--local` (`-l`) para pular a pergunta de local.
@@ -413,50 +413,50 @@ Adicione padrões sensíveis ao deny list do Claude Code:
 
 **Comandos não funcionam como esperado?**
 - Rode `/gsd-help`
-- Reinstale com `npx get-shit-done-cc@latest`
+- Reinstale com `npx @danielvm/gsd-semantic-release@latest`
 
 **Em Docker/container?**
 - Defina `CLAUDE_CONFIG_DIR` antes da instalação:
 
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx @danielvm/gsd-semantic-release --global
 ```
 
 ### Desinstalar
 
 ```bash
 # Instalações globais
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --gemini --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
-npx get-shit-done-cc --copilot --global --uninstall
-npx get-shit-done-cc --cursor --global --uninstall
-npx get-shit-done-cc --antigravity --global --uninstall
-npx get-shit-done-cc --augment --global --uninstall
-npx get-shit-done-cc --trae --global --uninstall
-npx get-shit-done-cc --cline --global --uninstall
+npx @danielvm/gsd-semantic-release --claude --global --uninstall
+npx @danielvm/gsd-semantic-release --opencode --global --uninstall
+npx @danielvm/gsd-semantic-release --gemini --global --uninstall
+npx @danielvm/gsd-semantic-release --kilo --global --uninstall
+npx @danielvm/gsd-semantic-release --codex --global --uninstall
+npx @danielvm/gsd-semantic-release --copilot --global --uninstall
+npx @danielvm/gsd-semantic-release --cursor --global --uninstall
+npx @danielvm/gsd-semantic-release --antigravity --global --uninstall
+npx @danielvm/gsd-semantic-release --augment --global --uninstall
+npx @danielvm/gsd-semantic-release --trae --global --uninstall
+npx @danielvm/gsd-semantic-release --cline --global --uninstall
 
 # Instalações locais (projeto atual)
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --gemini --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
-npx get-shit-done-cc --copilot --local --uninstall
-npx get-shit-done-cc --cursor --local --uninstall
-npx get-shit-done-cc --antigravity --local --uninstall
-npx get-shit-done-cc --augment --local --uninstall
-npx get-shit-done-cc --trae --local --uninstall
-npx get-shit-done-cc --cline --local --uninstall
+npx @danielvm/gsd-semantic-release --claude --local --uninstall
+npx @danielvm/gsd-semantic-release --opencode --local --uninstall
+npx @danielvm/gsd-semantic-release --gemini --local --uninstall
+npx @danielvm/gsd-semantic-release --kilo --local --uninstall
+npx @danielvm/gsd-semantic-release --codex --local --uninstall
+npx @danielvm/gsd-semantic-release --copilot --local --uninstall
+npx @danielvm/gsd-semantic-release --cursor --local --uninstall
+npx @danielvm/gsd-semantic-release --antigravity --local --uninstall
+npx @danielvm/gsd-semantic-release --augment --local --uninstall
+npx @danielvm/gsd-semantic-release --trae --local --uninstall
+npx @danielvm/gsd-semantic-release --cline --local --uninstall
 ```
 
 ---
 
 ## Community Ports
 
-OpenCode, Gemini CLI, Kilo e Codex agora são suportados nativamente via `npx get-shit-done-cc`.
+OpenCode, Gemini CLI, Kilo e Codex agora são suportados nativamente via `npx @danielvm/gsd-semantic-release`.
 
 | Projeto | Plataforma | Descrição |
 |---------|------------|-----------|
